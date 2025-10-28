@@ -40,7 +40,7 @@ async function submit() {
       const data = await res.json()
       if (data.token) {
         localStorage.setItem('token', data.token)
-        router.push('/')
+        await router.push('/')
         return
       }
     }
