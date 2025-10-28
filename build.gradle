@@ -1,0 +1,58 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.5.7'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.github.node-gradle.node' version '7.1.0'
+}
+
+node {
+    version = '22.12.0'
+    npmVersion = '10.1.0'
+    download = true
+    nodeProjectDir = file("${projectDir}/front")
+}
+
+tasks.register('npmBuild', NpmTask) {
+    args = ['run', 'build']
+    workingDir = file("${projectDir}/front")
+}
+
+tasks.register('copyFrontendBuild', Copy) {
+    dependsOn npmBuild
+    from file("${projectDir}/front/dist")
+    into file("${projectDir}/src/main/resources/static")
+}
+
+processResources.dependsOn copyFrontendBuild
+
+group = 'project'
+version = '0.0.1-SNAPSHOT'
+description = 'integration'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
